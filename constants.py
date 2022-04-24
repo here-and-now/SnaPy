@@ -1,9 +1,0 @@
-dsp_width = 800
-dsp_height = 600
-black = (0, 0, 0)
-white = (255, 255, 255)
-green = (0, 255, 0)
-red = (255, 0, 0)
-sna_w, sna_h = 10, 10
-speed = [10, 0]
-crashed = False
