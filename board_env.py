@@ -19,9 +19,9 @@ black, white, green, red = (0,0,0), (255,255,255), (0,255,0), (255,0,0)
 class SnapyEnv(gym.Env):
 
     def __init__(self,env_config={}):
-        self.window_width = 800
-        self.window_height = 800
-        self.pixel = 10
+        self.window_width = 1000
+        self.window_height = 1000
+        self.pixel = 100
         self.init_render()
         self.reset()
 
@@ -49,24 +49,27 @@ class SnapyEnv(gym.Env):
             
             if action == 0:
                 self.head.centerx = self.head.centerx - self.pixel
-
             if action == 1:
                 self.head.centerx = self.head.centerx + self.pixel
-
             if action == 2:
                 self.head.centery = self.head.centery + self.pixel
-
             if action == 3:
                 self.head.centery = self.head.centery - self.pixel
-
+            
             self.render() 
-            # self.head.move_ip(self.speed)
-            # self.food_contact()
+            self.check_death()
+
+    def check_death(self):
+        if self.head.centerx > self.window_width or self.head.centerx < 0:
+            print("fuck")
+            self.reset()
+        if self.head.centery > self.window_height or self.head.centery < 0:
+            print("fucky")
+            self.reset()
 
     def place_food(self):
         x = random.randrange(0, self.window_width, self.pixel)
         y = random.randrange(0, self.window_height, self.pixel)
-
         self.food = pygame.rect.Rect(x,y,self.pixel, self.pixel)
     
         
@@ -77,7 +80,7 @@ class SnapyEnv(gym.Env):
         pygame.draw.rect(self.screen, green, self.food)
         # pygame.draw.rect(self.screen, self.red, self.wall, 5)
         pygame.display.update()
-        self.clock.tick(25)
+        self.clock.tick(100)
 
         
 b = SnapyEnv()
