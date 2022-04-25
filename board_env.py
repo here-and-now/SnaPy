@@ -22,66 +22,107 @@ class SnapyEnv(gym.Env):
         self.window_width = 1000
         self.window_height = 1000
         self.pixel = 100
+        
         self.init_render()
         self.reset()
 
     def init_render(self):
-
         self.clock = pygame.time.Clock()
         self.screen = pygame.display.set_mode((self.window_width, self.window_height))
 
     def reset(self):
+
         self.done = False
-        self.head = pygame.rect.Rect(self.window_width/2, self.window_height/2, self.pixel, self.pixel)
-        self.place_food()
         self.score = 0
+        self.head = pygame.rect.Rect(self.window_width/2, self.window_height/2, self.pixel, self.pixel)
+        
+        self.snake_length = 0
+        self.previous_positions = []
+        self.place_food()
+
         prev_button_direction = 1
         button_direction = 2
         
-
         self.observation = {}        
         
         return self.observation
     
     def step(self):
         while True:
-            action = random.randrange(0,4) # left, right, up, down
+            action = random.randrange(0,4) # left, right,up, down
+            previous = self.head.center
             
-            if action == 0:
-                self.head.centerx = self.head.centerx - self.pixel
-            if action == 1:
-                self.head.centerx = self.head.centerx + self.pixel
-            if action == 2:
-                self.head.centery = self.head.centery + self.pixel
-            if action == 3:
-                self.head.centery = self.head.centery - self.pixel
+            manual = True
+            
+            if manual:
+                events = [pygame.event.wait()]
+                for event in events:
+                    if event.type == pygame.KEYDOWN:
+                        if event.key == pygame.K_LEFT:
+                            self.head.centerx = self.head.centerx - self.pixel
+                        if event.key == pygame.K_RIGHT:
+                            self.head.centerx = self.head.centerx + self.pixel
+                        if event.key == pygame.K_UP:
+                            self.head.centery = self.head.centery - self.pixel
+                        if event.key == pygame.K_DOWN:
+                            self.head.centery = self.head.centery + self.pixel
+            else:        
+                if action == 0:
+                    self.head.centerx = self.head.centerx - self.pixel
+                if action == 1:
+                    self.head.centerx = self.head.centerx + self.pixel
+                if action == 2:
+                    self.head.centery = self.head.centery - self.pixel
+                if action == 3:
+                    self.head.centery = self.head.centery + self.pixel
+                
+
+            
+            self.check_death()
+            self.check_food()
+            self.previous_positions.append(previous)
+            
+            self.body = self.previous_positions[-self.snake_length:]
+            print(self.body)
+            print('Snake length: ', self.snake_length)
+
             
             self.render() 
-            self.check_death()
+            
+    
+    def check_food(self):
+        if self.head.center == self.food.center:
+            self.snake_length += 1
+            self.place_food()
 
     def check_death(self):
-        if self.head.centerx > self.window_width or self.head.centerx < 0:
-            print("fuck")
+        if self.head.centerx > self.window_width or self.head.centerx < 0 or self.head.centery > self.window_height or self.head.centery < 0:
+            print("Reset, bummer")
+            self.score = 0
             self.reset()
-        if self.head.centery > self.window_height or self.head.centery < 0:
-            print("fucky")
+        if self.head.center in self.previous_positions[-self.snake_length:]:
+            print("OUROBOROS, FUCKER")
+            self.score = 0
             self.reset()
+            
 
     def place_food(self):
         x = random.randrange(0, self.window_width, self.pixel)
         y = random.randrange(0, self.window_height, self.pixel)
         self.food = pygame.rect.Rect(x,y,self.pixel, self.pixel)
-    
         
     def render(self):
-        
         self.screen.fill(black)
         pygame.draw.rect(self.screen, white, self.head)
         pygame.draw.rect(self.screen, green, self.food)
-        # pygame.draw.rect(self.screen, self.red, self.wall, 5)
-        pygame.display.update()
-        self.clock.tick(100)
+        
+        for part in self.body:
+            body = pygame.rect.Rect(0,0, self.pixel, self.pixel )
+            body.center = part
+            pygame.draw.rect(self.screen, white, body)
 
+        pygame.display.update()
+        self.clock.tick(25)
         
 b = SnapyEnv()
 b.step()
