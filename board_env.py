@@ -84,9 +84,6 @@ class SnapyEnv(gym.Env):
             self.check_death()
             self.check_food()
             
-            print('Snake length: ', self.snake_length)
-            print('Current position:', self.head.center)
-            
             self.render() 
             
 
@@ -97,7 +94,7 @@ class SnapyEnv(gym.Env):
             self.reset()
 
         elif self.snake_length > 0:
-            if self.head.center in self.previous_positions[-self.snake_length:-1]:
+            if self.head.center in self.previous_positions[-self.snake_length:]:
                 self.score = 0
                 self.reset()
                 
@@ -105,22 +102,12 @@ class SnapyEnv(gym.Env):
         self.screen.fill(black)
         pygame.draw.rect(self.screen, red, self.head)
         pygame.draw.rect(self.screen, green, self.food)
-        # print('alpha', self.previous_positions[-self.snake_length:-1])
-        # if self.snake_length > 0: 
 
-        # for (prev_pos) in self.previous_positions[-self.snake_length:-1]:
-            # print('render prev pos', prev_pos)
-            # body = pygame.rect.Rect(0,0, self.pixel, self.pixel )
-            # body.center = prev_pos
-            # pygame.draw.-xrect(self.screen, white, body)
-        print('Previous positions:' ,self.previous_positions)
-        
-        for x in range(1, self.snake_length+1):
-            print(x)
-            body = pygame.rect.Rect(0,0, self.pixel, self.pixel )
-            
-            body.center = self.previous_positions[-x]
-            pygame.draw.rect(self.screen, white, body)
+        if self.snake_length > 0: 
+            for (prev_pos) in self.previous_positions[-self.snake_length:]:
+                body = pygame.rect.Rect(0,0, self.pixel, self.pixel )
+                body.center = prev_pos
+                pygame.draw.rect(self.screen, white, body)
 
         pygame.display.update()
         self.clock.tick(25)
@@ -131,11 +118,13 @@ class SnapyEnv(gym.Env):
             self.place_food()
 
     def place_food(self):
-        # x = random.randrange(0, self.window_width, self.pixel)
-        # y = random.randrange(0, self.window_height, self.pixel)
-        x = random.randrange(self.head.centerx - 250, self.head.centery + 250, self.pixel)
-        y = random.randrange(self.head.centery - 250, self.head.centery + 250, self.pixel)
+        x = random.randrange(0, self.window_width, self.pixel)
+        y = random.randrange(0, self.window_height, self.pixel)
         self.food = pygame.rect.Rect(x,y,self.pixel, self.pixel)
+
+        if self.food.center in self.previous_positions[-self.snake_length:]:
+            self.place_food()
+
 b = SnapyEnv()
 b.step()
 
