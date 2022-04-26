@@ -20,19 +20,22 @@ SNAKE_LEN_GOAL=30
 
 class SnapyEnv(gym.Env):
 
-    def __init__(self):
+    def __init__(self, rend=False,rendrate=50):
+        super(SnapyEnv, self).__init__()
+
         self.window_width = 1000
         self.window_height = 1000
         self.pixel = 100
+        self.rend = rend
+        self.rendrate = rendrate
         
-        super(SnapyEnv, self).__init__()
         self.action_space = gym.spaces.Discrete(4)
         self.observation_space = gym.spaces.Box(low=-1000, high= 1000,
                                             shape=(5+SNAKE_LEN_GOAL,), dtype=np.int64)
 
-        
-        self.clock = pygame.time.Clock()
-        self.screen = pygame.display.set_mode((self.window_width, self.window_height))
+        if self.rend:
+            self.clock = pygame.time.Clock()
+            self.screen = pygame.display.set_mode((self.window_width, self.window_height))
 
         self.reset()
 
@@ -41,7 +44,6 @@ class SnapyEnv(gym.Env):
         self.done = False
         self.score = 0
         self.reward = 0
-
         self.snake_length = 0
         
         self.head = pygame.rect.Rect(self.window_width/2, self.window_height/2, self.pixel, self.pixel)
@@ -59,14 +61,13 @@ class SnapyEnv(gym.Env):
         observation = [self.head.centerx, self.head.centery, self.food.centerx, self.food.centery, self.snake_length] + list(self.previous_actions)
         observation = np.array(observation)
  
-        # print('Reset dtype', observation.dtype)
-        # print('Reset shape:',observation.shape)
         return observation#, self.reward, self.done, self.info 
-        # return self.observation
     
-    def step(self,action=0):
+    def step(self,action):
 
-        action = random.randrange(0,3)
+        # action = random.randrange(0,3)
+        self.previous_positions.append(self.head.center)
+
         if action == 0:
             self.head.centerx = self.head.centerx - self.pixel
         if action == 1:
@@ -80,33 +81,33 @@ class SnapyEnv(gym.Env):
         self.check_food()
         
         if self.done:
-            self.reward = - 10
+            self.reward = - 500
             self.reset()
         else:
             self.reward = self.score
- 
-        self.render()
-        self.info = {}
-    
-        observation = [self.head.centerx, self.head.centery, self.food.centerx, self.food.centery, self.snake_length] + list(self.previous_actions)
+        
+        if self.rend:
+            self.render()
 
+
+        self.info = {}
+        observation = [self.head.centerx, self.head.centery, self.food.centerx, self.food.centery, self.snake_length] + list(self.previous_actions)
         observation = np.array(observation) 
-        # print(self.observation.shape)
-        # print(self.observation)
+
         return observation, self.reward, self.done, self.info 
         
 
 
     def check_death(self):
         if self.head.centerx > self.window_width or self.head.centerx < 0 or self.head.centery > self.window_height or self.head.centery < 0:
-            # self.score = 0
             self.done = True
+            print('Head into wall')
             self.reset()
 
         elif self.snake_length > 0:
             if self.head.center in self.previous_positions[-self.snake_length:]:
-                # self.score = 0
                 self.done = True
+                print('Ouroboros')
                 self.reset()
                 
     def render(self):
@@ -121,13 +122,13 @@ class SnapyEnv(gym.Env):
                 pygame.draw.rect(self.screen, white, body)
 
         pygame.display.update()
-        self.clock.tick(25)
+        self.clock.tick(self.rendrate)
         
     def check_food(self):
         if self.head.center == self.food.center:
             self.snake_length += 1
-            
-            self.score += 50
+             
+            self.score += 100
             
             self.place_food()
 
