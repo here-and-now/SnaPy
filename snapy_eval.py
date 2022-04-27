@@ -9,40 +9,43 @@ from board_env import SnapyEnv
 import glob
 
 
-# if __name__ == "__main__":
-name = 'snapy10'
-    # version = '01890000'
+if __name__ == "__main__":
+    name = 'snapy4'
+        # version = '01890000'
 
-model_dir = f'/home/os/gits/SnaPy/models/{name}'
+    model_dir = f'/home/os/gits/SnaPy/models/{name}'
     
    
 
-def render_newest():
- 
-    files = [os.path.join(model_dir, x) for x in os.listdir(model_dir) if x.endswith(".zip")]
-    newest = max(files, key=os.path.getctime)
-    print(newest)
+    def render_newest():
+     
+        files = [os.path.join(model_dir, x) for x in os.listdir(model_dir) if x.endswith(".zip")]
+        newest = max(files, key=os.path.getctime)
+        print(newest)
 
-    model = PPO.load(newest, verbose=1)
-    # model = PPO.load(f'models/{name}/{version}', verbose=1)
+        model = PPO.load(newest, verbose=1)
+        # model = PPO.load(f'models/{name}/{version}', verbose=1)
 
-    # both working
-    # model.set_env(SubprocVecEnv([lambda: SnapyEnv(rend=True, rendrate=10)]))
-    model.set_env(DummyVecEnv([lambda: SnapyEnv()]))
+        # both working
+        # model.set_env(SubprocVecEnv([lambda: SnapyEnv()]))
+        # model.set_env(DummyVecEnv([lambda: SnapyEnv()]))
 
 
-    mean_reward, std_reward = evaluate_policy(model, model.get_env(), n_eval_episodes=1)
-    print('Mean reward', mean_reward)
-    print('Std reward', std_reward)
+        # mean_reward, std_reward = evaluate_policy(model, model.get_env(), n_eval_episodes=1)
+        # print('Mean reward', mean_reward)
+        # print('Std reward', std_reward)
 
-    env = SnapyEnv() 
+        env = SnapyEnv() 
+        # env = DummyVecEnv([lambda: env])
 
-    obs = env.reset()
-    for _ in range(500):
-        action, _states = model.predict(obs)
-        obs, rewards, dones, info = env.step(action)
-        env.render()
-    
+        obs = env.reset()
+        for _ in range(500):
+            action, _states = model.predict(obs)
+            obs, rewards, dones, info = env.step(action)
+            env.render()
+            if dones:
+                env.reset()
+        
+        render_newest()
     render_newest()
-render_newest()
 

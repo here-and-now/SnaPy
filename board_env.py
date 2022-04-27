@@ -31,16 +31,16 @@ class SnapyEnv(gym.Env):
         self.rendrate = 10
         # rewards
 
-        self.food_reward = 500
-        self.step_reward = -1
-        self.ouroboros_reward = -10
-        self.wall_reward = -10
-        self.penalty = 0
+        self.food_reward = 10
+        self.step_reward = 0
+        self.ouroboros_reward = -1
+        self.wall_reward = -1
+        self.penalty = -.005
         
         # gym spaces
         self.action_space = gym.spaces.Discrete(4)
-        self.observation_space = gym.spaces.Box(low=-10000, high= 10000,
-                                            shape=(5+SNAKE_LEN_GOAL,), dtype=np.int64)
+        self.observation_space = gym.spaces.Box(low=-1000, high= 1000,
+                                            shape=(5+SNAKE_LEN_GOAL,), dtype=np.float32)
 
         # start fresh
         self.reset()
@@ -63,12 +63,9 @@ class SnapyEnv(gym.Env):
         # append nonsense data for nonexistent prev actions
         for _ in range(SNAKE_LEN_GOAL):
             self.previous_actions.append(-1)
-      
         # construct observation space
-        self.info = {}
         observation = [self.head.centerx, self.head.centery, self.food.centerx, self.food.centery, self.snake_length] + list(self.previous_actions)
         observation = np.array(observation)
- 
         return observation 
     
     def step(self,action):
@@ -84,42 +81,34 @@ class SnapyEnv(gym.Env):
         if action == 3:
             self.head.centery = self.head.centery + self.pixel
 
-        self.score += self.check_death()
-        self.score += self.check_food()
-        
-        # if self.done:
-            # self.reset()
-        # else:
-        self.reward = self.score
-        
+        self.check_death()
+        self.check_food() 
+
         self.info = {}
+        self.reward = self.score
+
         observation = [self.head.centerx, self.head.centery, self.food.centerx, self.food.centery, self.snake_length] + list(self.previous_actions)
         observation = np.array(observation) 
-        # print(self.reward)
+        
         return observation, self.reward, self.done, self.info 
         
-
 
     def check_death(self):
         if self.head.centerx > self.window_width or self.head.centerx < 0 or self.head.centery > self.window_height or self.head.centery < 0:
             self.done = True
-            return self.wall_reward
+            self.score += self.wall_reward
 
         elif self.snake_length > 0 and self.head.center in self.previous_positions[-self.snake_length:]:
             self.done = True
-            return self.ouroboros_reward
-        else:
-            return self.step_reward
-    
+            self.score += self.ouroboros_reward
     
     def check_food(self):
         if self.head.center == self.food.center:
             self.snake_length += 1
             self.place_food()
-            return self.food_reward
+            self.score += self.food_reward
         else:
-            # return self.penalty
-            return self.penalty
+            self.score += self.penalty
 
 
     def render(self):
