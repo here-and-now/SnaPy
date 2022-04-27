@@ -6,30 +6,12 @@ from board_env import SnapyEnv
 import time
 # from stable_baselines3.common.policies import MlpPolicy
 # from stable_baselines3.common import set_global_seeds, make_vec_env
-from stable_baselines3.common.vec_env import SubprocVecEnv
-
-def make_env(seeds=0):
-    """
-    Utility function for multiprocessed env.
-
-    :param env_id: (str) the environment ID
-    :param num_env: (int) the number of environments you wish to have in subprocesses
-    :param seed: (int) the inital seed for RNG
-    :param rank: (int) index of the subprocess
-    """
-    def _init():
-        # env = gym.make(env_id)
-        env = SnapyEnv()
-        # env.seed(seed + rank)
-        return env
-    # set_global_seeds(seed)
-    return _init
-
+from stable_baselines3.common.vec_env import SubprocVecEnv, DummyVecEnv
 
 
 if __name__ == '__main__':
 
-    name = 'snapy_1'
+    name = 'snapy_3test'
 
     models_dir = f'models/{name}/'
     logdir = f'logs/{name}/'
@@ -39,10 +21,20 @@ if __name__ == '__main__':
     if not os.path.exists(logdir):
         os.makedirs(logdir)
 
-    num_cpu = 6
-    env = SubprocVecEnv([make_env(i) for i in range(num_cpu)])
+    num_cpu = 8
+    
 
-    model = PPO('MlpPolicy', env, verbose=1, tensorboard_log=logdir)
+    # from stable_baselines3.common.vec_env import VecMonitor
+    # env = SubprocVecEnv([lambda: SnapyEnv() for i in range(num_cpu)])
+    # env = VecMonitor(env, logdir)
+    
+    from stable_baselines3.common.monitor import Monitor
+    env = SnapyEnv()
+    env = Monitor(env, logdir)
+    env = DummyVecEnv([lambda: env])
+    print(env)
+
+    model = PPO('MlpPolicy', env, verbose=1, tensorboard_log=logdir )
 
     TIMESTEPS = 10000
 
@@ -54,7 +46,8 @@ if __name__ == '__main__':
         # if TIMESTEPS*iters > 10000000:
             # break
         
-        model.learn(total_timesteps=TIMESTEPS, reset_num_timesteps=False, tb_log_name=f"PPO")
+        model.learn(total_timesteps=TIMESTEPS, reset_num_timesteps=False, tb_log_name="PPO")
         model.save(f"{models_dir}/{TIMESTEPS*iters}")
+        print()
         
 

@@ -28,12 +28,12 @@ class SnapyEnv(gym.Env):
         self.window_height = 1000
         self.pixel = 100
         self.rend = False
-        self.rendrate = 25
+        self.rendrate = 5
         # rewards
-        self.food_reward = 500
-        self.step_reward = 1
-        self.ouroboros_reward = - 250
-        self.wall_reward = - 100
+        self.food_reward = 10
+        self.step_reward = 0
+        self.ouroboros_reward = -2
+        self.wall_reward = -5
         
         # gym spaces
         self.action_space = gym.spaces.Discrete(4)
@@ -93,7 +93,7 @@ class SnapyEnv(gym.Env):
         self.info = {}
         observation = [self.head.centerx, self.head.centery, self.food.centerx, self.food.centery, self.snake_length] + list(self.previous_actions)
         observation = np.array(observation) 
-        print(self.reward)
+        # print(self.reward)
         return observation, self.reward, self.done, self.info 
         
 
@@ -116,7 +116,7 @@ class SnapyEnv(gym.Env):
             self.place_food()
             return self.food_reward
         else:
-            return -self.food_reward/10000
+            return 0
 
 
     def render(self):
