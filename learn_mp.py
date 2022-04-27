@@ -29,20 +29,18 @@ def make_env(seeds=0):
 
 if __name__ == '__main__':
 
-    name = 'score2_mp'
-    models_dir = f'models/{name}{int(time.time())}/'
-    logdir = f'logs/{name}{int(time.time())}/'
+    name = 'score3_mp'
 
-
-    num_cpu = 4  # Number of processes to use
-    # Create the vectorized environment
-    env = SubprocVecEnv([make_env(i) for i in range(num_cpu)])
-
+    models_dir = f'models/{name}/'
+    logdir = f'logs/{name}/'
+    
     if not os.path.exists(models_dir):
         os.makedirs(models_dir)
-
     if not os.path.exists(logdir):
         os.makedirs(logdir)
+
+    num_cpu = 6
+    env = SubprocVecEnv([make_env(i) for i in range(num_cpu)])
 
     model = PPO('MlpPolicy', env, verbose=1, tensorboard_log=logdir)
 
@@ -52,6 +50,12 @@ if __name__ == '__main__':
     iters = 0
     while True:
         iters += 1
-        model.learn(total_timesteps=TIMESTEPS, reset_num_timesteps=False, tb_log_name=f"PPO")
-        model.save(f"{models_dir}/{TIMESTEPS*iters}")
+        
+        if TIMESTEPS*iters > 10000000:
+            break
+        
+        else:
+            model.learn(total_timesteps=TIMESTEPS, reset_num_timesteps=False, tb_log_name=f"PPO")
+            model.save(f"{models_dir}/{TIMESTEPS*iters}")
+        
 

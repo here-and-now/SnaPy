@@ -6,20 +6,35 @@ from stable_baselines3.common.evaluation import evaluate_policy
 from stable_baselines3.common.vec_env import DummyVecEnv, SubprocVecEnv
 
 from board_env import SnapyEnv
+import glob
+
 
 if __name__ == "__main__":
-    name = 'score2'
-    version = '820000'
+    name = 'score2_mp1651002962'
+    # version = '01890000'
 
-    # model = PPO('MlpPolicy', env, verbose=1, tensorboard_log=logdir)
-    model = PPO.load(f'models/{name}/{version}', verbose=1)
+    model_dir = f'/home/os/gits/SnaPy/models/{name}'
+    
+    
+    files = [os.path.join(model_dir, x) for x in os.listdir(model_dir) if x.endswith(".zip")]
+    newest = max(files, key=os.path.getctime)
+    print(newest)
 
-    model.set_env(SubprocVecEnv([lambda: SnapyEnv(rend=True, rendrate=10)]))
-    mean_reward, std_reward = evaluate_policy(model, model.get_env(), n_eval_episodes=10)
+    model = PPO.load(newest, verbose=1)
+    # model = PPO.load(f'models/{name}/{version}', verbose=1)
 
-    obs = model.reset()
-    for i in range(1000):
+    # both working
+    # model.set_env(SubprocVecEnv([lambda: SnapyEnv(rend=True, rendrate=10)]))
+    # model.set_env(DummyVecEnv([lambda: SnapyEnv()]))
+
+
+    mean_reward, std_reward = evaluate_policy(model, model.get_env(), n_eval_episodes=1)
+
+    
+
+    obs = env.reset()
+    for _ in range(1000):
         action, _states = model.predict(obs)
-        obs, rewards, dones, info = model.step(action)
-        # env.render()
+        obs, rewards, dones, info = env.step(action)
+        env.render()
 

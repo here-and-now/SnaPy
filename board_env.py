@@ -20,22 +20,21 @@ SNAKE_LEN_GOAL=30
 
 class SnapyEnv(gym.Env):
 
-    def __init__(self, rend=False,rendrate=50):
+    # def __init__(self,rend=False,rendrate=50):
+    def __init__(self):
         super(SnapyEnv, self).__init__()
 
         self.window_width = 1000
         self.window_height = 1000
         self.pixel = 100
-        self.rend = rend
-        self.rendrate = rendrate
+        self.render = False
+        # self.rend = rend
+        # self.rendrate = rendrate
         
         self.action_space = gym.spaces.Discrete(4)
         self.observation_space = gym.spaces.Box(low=-1000, high= 1000,
                                             shape=(5+SNAKE_LEN_GOAL,), dtype=np.int64)
 
-        if self.rend:
-            self.clock = pygame.time.Clock()
-            self.screen = pygame.display.set_mode((self.window_width, self.window_height))
 
         self.reset()
 
@@ -86,8 +85,8 @@ class SnapyEnv(gym.Env):
         else:
             self.reward = self.score
         
-        if self.rend:
-            self.render()
+        # if self.rend:
+            # self.render()
 
 
         self.info = {}
@@ -111,6 +110,11 @@ class SnapyEnv(gym.Env):
                 self.reset()
                 
     def render(self):
+        if not self.render:
+            self.clock = pygame.time.Clock()
+            self.screen = pygame.display.set_mode((self.window_width, self.window_height))
+            self.render = True
+            
         self.screen.fill(black)
         pygame.draw.rect(self.screen, red, self.head)
         pygame.draw.rect(self.screen, green, self.food)
