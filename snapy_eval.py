@@ -10,7 +10,7 @@ import glob
 
 
 if __name__ == "__main__":
-    name = 'score2_mp1651002962'
+    name = 'snapy_1'
     # version = '01890000'
 
     model_dir = f'/home/os/gits/SnaPy/models/{name}'
@@ -25,12 +25,14 @@ if __name__ == "__main__":
 
     # both working
     # model.set_env(SubprocVecEnv([lambda: SnapyEnv(rend=True, rendrate=10)]))
-    # model.set_env(DummyVecEnv([lambda: SnapyEnv()]))
+    model.set_env(DummyVecEnv([lambda: SnapyEnv()]))
 
 
-    mean_reward, std_reward = evaluate_policy(model, model.get_env(), n_eval_episodes=1)
+    # mean_reward, std_reward = evaluate_policy(model, model.get_env(), n_eval_episodes=1)
+    # print('Mean reward', mean_reward)
+    # print('Std reward', std_reward)
 
-    
+    env = SnapyEnv() 
 
     obs = env.reset()
     for _ in range(1000):

@@ -29,7 +29,7 @@ def make_env(seeds=0):
 
 if __name__ == '__main__':
 
-    name = 'score3_mp'
+    name = 'snapy_1'
 
     models_dir = f'models/{name}/'
     logdir = f'logs/{name}/'
@@ -51,11 +51,10 @@ if __name__ == '__main__':
     while True:
         iters += 1
         
-        if TIMESTEPS*iters > 10000000:
-            break
+        # if TIMESTEPS*iters > 10000000:
+            # break
         
-        else:
-            model.learn(total_timesteps=TIMESTEPS, reset_num_timesteps=False, tb_log_name=f"PPO")
-            model.save(f"{models_dir}/{TIMESTEPS*iters}")
+        model.learn(total_timesteps=TIMESTEPS, reset_num_timesteps=False, tb_log_name=f"PPO")
+        model.save(f"{models_dir}/{TIMESTEPS*iters}")
         
 
