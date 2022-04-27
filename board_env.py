@@ -20,7 +20,7 @@ SNAKE_LEN_GOAL=30
 
 class SnapyEnv(gym.Env):
 
-    # def __init__(self,rend=False,rendrate=50):
+    # def __init__(self,rend=False,rendrate=50):FG
     def __init__(self):
         super(SnapyEnv, self).__init__()
         # inits
@@ -28,16 +28,18 @@ class SnapyEnv(gym.Env):
         self.window_height = 1000
         self.pixel = 100
         self.rend = False
-        self.rendrate = 5
+        self.rendrate = 10
         # rewards
-        self.food_reward = 10
-        self.step_reward = 0
-        self.ouroboros_reward = -2
-        self.wall_reward = -5
+
+        self.food_reward = 500
+        self.step_reward = -1
+        self.ouroboros_reward = -10
+        self.wall_reward = -10
+        self.penalty = 0
         
         # gym spaces
         self.action_space = gym.spaces.Discrete(4)
-        self.observation_space = gym.spaces.Box(low=-1000, high= 1000,
+        self.observation_space = gym.spaces.Box(low=-10000, high= 10000,
                                             shape=(5+SNAKE_LEN_GOAL,), dtype=np.int64)
 
         # start fresh
@@ -85,10 +87,10 @@ class SnapyEnv(gym.Env):
         self.score += self.check_death()
         self.score += self.check_food()
         
-        if self.done:
-            self.reset()
-        else:
-            self.reward = self.score
+        # if self.done:
+            # self.reset()
+        # else:
+        self.reward = self.score
         
         self.info = {}
         observation = [self.head.centerx, self.head.centery, self.food.centerx, self.food.centery, self.snake_length] + list(self.previous_actions)
@@ -116,7 +118,8 @@ class SnapyEnv(gym.Env):
             self.place_food()
             return self.food_reward
         else:
-            return 0
+            # return self.penalty
+            return self.penalty
 
 
     def render(self):

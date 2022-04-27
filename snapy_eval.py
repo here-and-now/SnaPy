@@ -9,13 +9,16 @@ from board_env import SnapyEnv
 import glob
 
 
-if __name__ == "__main__":
-    name = 'snapy_2test'
+# if __name__ == "__main__":
+name = 'snapy10'
     # version = '01890000'
 
-    model_dir = f'/home/os/gits/SnaPy/models/{name}'
+model_dir = f'/home/os/gits/SnaPy/models/{name}'
     
-    
+   
+
+def render_newest():
+ 
     files = [os.path.join(model_dir, x) for x in os.listdir(model_dir) if x.endswith(".zip")]
     newest = max(files, key=os.path.getctime)
     print(newest)
@@ -28,15 +31,18 @@ if __name__ == "__main__":
     model.set_env(DummyVecEnv([lambda: SnapyEnv()]))
 
 
-    # mean_reward, std_reward = evaluate_policy(model, model.get_env(), n_eval_episodes=1)
-    # print('Mean reward', mean_reward)
-    # print('Std reward', std_reward)
+    mean_reward, std_reward = evaluate_policy(model, model.get_env(), n_eval_episodes=1)
+    print('Mean reward', mean_reward)
+    print('Std reward', std_reward)
 
     env = SnapyEnv() 
 
     obs = env.reset()
-    for _ in range(1000):
+    for _ in range(500):
         action, _states = model.predict(obs)
         obs, rewards, dones, info = env.step(action)
         env.render()
+    
+    render_newest()
+render_newest()
 

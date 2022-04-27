@@ -8,10 +8,28 @@ import time
 # from stable_baselines3.common import set_global_seeds, make_vec_env
 from stable_baselines3.common.vec_env import SubprocVecEnv, DummyVecEnv
 
+from stable_baselines3.common.callbacks import BaseCallback
+
+import tensorflow as tf
+class TensorboardCallback(BaseCallback):
+    """
+    Custom callback for plotting additional values in tensorboard.
+    """
+    def __init__(self, verbose=0):
+        self.is_tb_set = False
+        super(TensorboardCallback, self).__init__(verbose)
+
+    def _on_step(self) -> bool:
+        # Log scalar value (here a random variable)
+        import numpy as np
+        value = np.random.random()
+        summary = tf.summary(value=[tf.summary.value(tag='random_value', simple_value=value)])
+        self.locals['writer'].add_summary(summary, self.num_timesteps)
+        return True
 
 if __name__ == '__main__':
 
-    name = 'snapy11'
+    name = 'snapy_3test'
 
     models_dir = f'models/{name}/'
     logdir = f'logs/{name}/'
@@ -21,24 +39,15 @@ if __name__ == '__main__':
     if not os.path.exists(logdir):
         os.makedirs(logdir)
 
-    num_cpu = 8
-    
-
-    # from stable_baselines3.common.vec_env import VecMonitor
-    # env = SubprocVecEnv([lambda: SnapyEnv() for i in range(num_cpu)])
-    # env = VecMonitor(env, logdir)
-    
     from stable_baselines3.common.monitor import Monitor
     env = SnapyEnv()
     env = Monitor(env, logdir)
-    # env = DummyVecEnv([lambda: env])
+    env = DummyVecEnv([lambda: env])
     print(env)
-
     model = PPO('MlpPolicy', env, verbose=1, tensorboard_log=logdir )
 
     TIMESTEPS = 10000
 
-    # model.learn(total_timesteps=TIMESTEPS)
     iters = 0
     while True:
         iters += 1
@@ -46,7 +55,7 @@ if __name__ == '__main__':
         # if TIMESTEPS*iters > 10000000:
             # break
         
-        model.learn(total_timesteps=TIMESTEPS, reset_num_timesteps=False, tb_log_name="PPO")
+        model.learn(total_timesteps=TIMESTEPS, reset_num_timesteps=False, tb_log_name="PPO",callback=TensorboardCallback())
         model.save(f"{models_dir}/{TIMESTEPS*iters}")
         print()
         
