@@ -33,9 +33,8 @@ class SnapyEnv(gym.Env):
 
         self.food_reward = 500
         self.step_reward = 0
-        self.ouroboros_reward = 1
+        self.ouroboros_reward = -2
         self.wall_reward = -1
-        self.penalty = 0
         
         # gym spaces
         self.action_space = gym.spaces.Discrete(4)
@@ -89,9 +88,6 @@ class SnapyEnv(gym.Env):
         self.info = {}
         self.reward = self.score
         
-        print(self.previous_positions[-self.snake_length:])
-        print('head: ', self.head.center)
-
         observation = [self.head.centerx, self.head.centery, self.food.centerx, self.food.centery, self.snake_length] + list(self.previous_actions)
         observation = np.array(observation) 
         
@@ -102,10 +98,6 @@ class SnapyEnv(gym.Env):
         if self.head.centerx > self.window_width or self.head.centerx < 0 or self.head.centery > self.window_height or self.head.centery < 0:
             self.done = True
             self.score += self.wall_reward
-        # elif self.snake_length == 1 and self.head.center == self.previous_positions[-1]:
-            # print("death by 1snake")
-            # self.done = True
-            # self.score += self.ouroboros_reward
         elif self.snake_length > 1 and self.head.center in self.previous_positions[-self.snake_length:]:
             self.done = True
             self.score += self.ouroboros_reward
@@ -115,8 +107,6 @@ class SnapyEnv(gym.Env):
             self.snake_length += 1
             self.place_food()
             self.score += self.food_reward
-        else:
-            self.score += self.penalty
     
     def euclidean_dist_to_food(self):
         return np.linalg.norm(np.array(self.snake_head.center) - np.array(self.food.center))
@@ -132,17 +122,11 @@ class SnapyEnv(gym.Env):
         pygame.draw.rect(self.screen, red, self.head)
         pygame.draw.rect(self.screen, green, self.food)
 
-        if self.snake_length > 0: 
             
-            body = pygame.rect.Rect(0,0, self.pixel, self.pixel )
-            if self.snake_length == 1:
-                    prev_pos = self.previous_positions[-1]
-                    body.center = prev_pos
-                    pygame.draw.rect(self.screen, white, body)
-            else:
-                for (prev_pos) in self.previous_positions[-self.snake_length:]:
-                    body.center = prev_pos
-                    pygame.draw.rect(self.screen, white, body)
+        body = pygame.rect.Rect(0,0, self.pixel, self.pixel )
+        for (prev_pos) in self.previous_positions[-self.snake_length:]:
+            body.center = prev_pos
+            pygame.draw.rect(self.screen, white, body)
 
         pygame.display.update()
         self.clock.tick(self.rendrate)

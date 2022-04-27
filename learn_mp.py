@@ -8,7 +8,15 @@ from stable_baselines3.common.vec_env import SubprocVecEnv, DummyVecEnv, VecNorm
 
 if __name__ == '__main__':
 
-    name = 'snapy6'
+
+    # food_reward = 500
+    # step_reward = -100
+    # ouroboros_reward = 0
+    # wall_reward = -5
+    # ouroboros_reward = -1
+
+
+    name = 'snapy6_po'
 
     models_dir = f'models/{name}/'
     logdir = f'logs/{name}/'
@@ -18,12 +26,12 @@ if __name__ == '__main__':
     if not os.path.exists(logdir):
         os.makedirs(logdir)
 
-    num_cpu = 8
+    num_cpu = 20
     
     env = SnapyEnv()
     env = SubprocVecEnv([lambda: env for i in range(num_cpu)])
     env = VecMonitor(env, logdir)
-
+    
     model = PPO('MlpPolicy', env, verbose=1, tensorboard_log=logdir)
 
     TIMESTEPS = 50000
