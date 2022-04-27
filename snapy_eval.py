@@ -10,7 +10,7 @@ import glob
 
 
 if __name__ == "__main__":
-    name = 'snapy4'
+    name = 'snapy6'
         # version = '01890000'
 
     model_dir = f'/home/os/gits/SnaPy/models/{name}'
@@ -39,7 +39,8 @@ if __name__ == "__main__":
         # env = DummyVecEnv([lambda: env])
 
         obs = env.reset()
-        for _ in range(500):
+
+        for _ in range(100):
             action, _states = model.predict(obs)
             obs, rewards, dones, info = env.step(action)
             env.render()

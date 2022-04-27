@@ -28,19 +28,19 @@ class SnapyEnv(gym.Env):
         self.window_height = 1000
         self.pixel = 100
         self.rend = False
-        self.rendrate = 10
+        self.rendrate = 3
         # rewards
 
-        self.food_reward = 10
+        self.food_reward = 500
         self.step_reward = 0
-        self.ouroboros_reward = -1
+        self.ouroboros_reward = 1
         self.wall_reward = -1
-        self.penalty = -.005
+        self.penalty = 0
         
         # gym spaces
         self.action_space = gym.spaces.Discrete(4)
-        self.observation_space = gym.spaces.Box(low=-1000, high= 1000,
-                                            shape=(5+SNAKE_LEN_GOAL,), dtype=np.float32)
+        self.observation_space = gym.spaces.Box(low=-5000, high=5000,
+                                            shape=(5+SNAKE_LEN_GOAL,), dtype=np.int32)
 
         # start fresh
         self.reset()
@@ -57,7 +57,7 @@ class SnapyEnv(gym.Env):
         self.done = False
         self.score = 0
         self.reward = 0
-        self.snake_length = 0
+        self.snake_length = 2
         self.place_food()
        
         # append nonsense data for nonexistent prev actions
@@ -67,9 +67,10 @@ class SnapyEnv(gym.Env):
         observation = [self.head.centerx, self.head.centery, self.food.centerx, self.food.centery, self.snake_length] + list(self.previous_actions)
         observation = np.array(observation)
         return observation 
-    
+   
+ 
     def step(self,action):
-        
+        self.previous_actions.append(action) 
         self.previous_positions.append(self.head.center)
 
         if action == 0:
@@ -81,11 +82,15 @@ class SnapyEnv(gym.Env):
         if action == 3:
             self.head.centery = self.head.centery + self.pixel
 
+
         self.check_death()
         self.check_food() 
 
         self.info = {}
         self.reward = self.score
+        
+        print(self.previous_positions[-self.snake_length:])
+        print('head: ', self.head.center)
 
         observation = [self.head.centerx, self.head.centery, self.food.centerx, self.food.centery, self.snake_length] + list(self.previous_actions)
         observation = np.array(observation) 
@@ -97,8 +102,11 @@ class SnapyEnv(gym.Env):
         if self.head.centerx > self.window_width or self.head.centerx < 0 or self.head.centery > self.window_height or self.head.centery < 0:
             self.done = True
             self.score += self.wall_reward
-
-        elif self.snake_length > 0 and self.head.center in self.previous_positions[-self.snake_length:]:
+        # elif self.snake_length == 1 and self.head.center == self.previous_positions[-1]:
+            # print("death by 1snake")
+            # self.done = True
+            # self.score += self.ouroboros_reward
+        elif self.snake_length > 1 and self.head.center in self.previous_positions[-self.snake_length:]:
             self.done = True
             self.score += self.ouroboros_reward
     
@@ -109,6 +117,9 @@ class SnapyEnv(gym.Env):
             self.score += self.food_reward
         else:
             self.score += self.penalty
+    
+    def euclidean_dist_to_food(self):
+        return np.linalg.norm(np.array(self.snake_head.center) - np.array(self.food.center))
 
 
     def render(self):
@@ -122,10 +133,16 @@ class SnapyEnv(gym.Env):
         pygame.draw.rect(self.screen, green, self.food)
 
         if self.snake_length > 0: 
-            for (prev_pos) in self.previous_positions[-self.snake_length:]:
-                body = pygame.rect.Rect(0,0, self.pixel, self.pixel )
-                body.center = prev_pos
-                pygame.draw.rect(self.screen, white, body)
+            
+            body = pygame.rect.Rect(0,0, self.pixel, self.pixel )
+            if self.snake_length == 1:
+                    prev_pos = self.previous_positions[-1]
+                    body.center = prev_pos
+                    pygame.draw.rect(self.screen, white, body)
+            else:
+                for (prev_pos) in self.previous_positions[-self.snake_length:]:
+                    body.center = prev_pos
+                    pygame.draw.rect(self.screen, white, body)
 
         pygame.display.update()
         self.clock.tick(self.rendrate)

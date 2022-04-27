@@ -8,7 +8,7 @@ from stable_baselines3.common.vec_env import SubprocVecEnv, DummyVecEnv, VecNorm
 
 if __name__ == '__main__':
 
-    name = 'snapy4'
+    name = 'snapy6'
 
     models_dir = f'models/{name}/'
     logdir = f'logs/{name}/'
@@ -20,18 +20,14 @@ if __name__ == '__main__':
 
     num_cpu = 8
     
-
-
     env = SnapyEnv()
     env = SubprocVecEnv([lambda: env for i in range(num_cpu)])
     env = VecMonitor(env, logdir)
-    
 
     model = PPO('MlpPolicy', env, verbose=1, tensorboard_log=logdir)
 
     TIMESTEPS = 50000
 
-    # model.learn(total_timesteps=TIMESTEPS)
     iters = 0
     while True:
         iters += 1
