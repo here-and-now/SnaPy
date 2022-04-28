@@ -21,7 +21,7 @@ SNAKE_LEN_GOAL=30
 class SnapyEnv(gym.Env):
 
     # def __init__(self,rend=False,rendrate=50):FG
-    def __init__(self):
+    def __init__(self, **kwargs):
         super(SnapyEnv, self).__init__()
         # inits
         self.window_width = 1000
@@ -29,13 +29,16 @@ class SnapyEnv(gym.Env):
         self.pixel = 100
         self.rend = False
         self.rendrate = 3
-        # rewards
 
-        self.food_reward = 500
-        self.step_reward = -0.1
-        self.ouroboros_reward = -5
-        self.wall_reward = -5
+        # standard rewards
+        self.food_reward = 0
+        self.step_reward = 0
+        self.ouroboros_reward = 0
+        self.wall_reward = 0
         
+        # pass reward kwargs as attributes
+        for key, value in kwargs.items():
+            setattr(self, key, value)
         # gym spaces
         self.action_space = gym.spaces.Discrete(4)
         self.observation_space = gym.spaces.Box(low=-1000, high=1000,
@@ -58,10 +61,13 @@ class SnapyEnv(gym.Env):
         self.reward = 0
         self.snake_length = 2
         self.place_food()
+        
+        print(self.food_reward)
        
         # append nonsense data for nonexistent prev actions
         for _ in range(SNAKE_LEN_GOAL):
             self.previous_actions.append(-1)
+
         # construct observation space
         observation = [self.head.centerx, self.head.centery, self.food.centerx, self.food.centery, self.snake_length] + list(self.previous_actions)
         observation = np.array(observation)
