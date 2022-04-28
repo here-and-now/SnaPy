@@ -7,26 +7,23 @@ from stable_baselines3.common.vec_env import DummyVecEnv, SubprocVecEnv
 
 from board_env import SnapyEnv
 import glob
-
+import json
 
 if __name__ == "__main__":
-    name = 'snapy7_po'
-        # version = '01890000'
 
-    model_dir = f'/home/os/gits/SnaPy/models/{name}'
-    
-   
-
+    name = 'snapy8bs'
+    model_dir = f'/home/os/gits/SnaPy/models/{name}/'
     def render_newest():
      
         files = [os.path.join(model_dir, x) for x in os.listdir(model_dir) if x.endswith(".zip")]
         newest = max(files, key=os.path.getctime)
-        print(newest)
+        print('loaded model:', newest)
 
         model = PPO.load(newest, verbose=1)
         # model = PPO.load(f'models/{name}/{version}', verbose=1)
 
-        # both working
+
+        # both working, not needed?
         # model.set_env(SubprocVecEnv([lambda: SnapyEnv()]))
         # model.set_env(DummyVecEnv([lambda: SnapyEnv()]))
 
@@ -35,11 +32,13 @@ if __name__ == "__main__":
         # print('Mean reward', mean_reward)
         # print('Std reward', std_reward)
 
-        env = SnapyEnv() 
+        with open(model_dir + 'rewards','r') as f:
+            rewards = json.load(f)
+        print(rewards)
+        env = SnapyEnv(**rewards)
         # env = DummyVecEnv([lambda: env])
 
         obs = env.reset()
-
         for _ in range(100):
             action, _states = model.predict(obs)
             obs, rewards, dones, info = env.step(action)

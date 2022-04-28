@@ -6,17 +6,12 @@ import time
 import numpy as np
 import gym
 from collections import deque
-# import tflearn
-# from tflearn.layers.core import input_data, dropout, fully_connected
-# from tflearn.layers.estimator import regression
-
 
 window_width, window_height = 800,800
-
-
 black, white, green, red = (0,0,0), (255,255,255), (0,255,0), (255,0,0)
 
-SNAKE_LEN_GOAL=30
+
+SNAKE_LEN_GOAL=50
 
 class SnapyEnv(gym.Env):
 
