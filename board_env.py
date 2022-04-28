@@ -14,10 +14,9 @@ black, white, green, red = (0,0,0), (255,255,255), (0,255,0), (255,0,0)
 SNAKE_LEN_GOAL=50
 
 class SnapyEnv(gym.Env):
-
-    # def __init__(self,rend=False,rendrate=50):FG
     def __init__(self, **kwargs):
         super(SnapyEnv, self).__init__()
+
         # inits
         self.window_width = 1000
         self.window_height = 1000
@@ -34,6 +33,7 @@ class SnapyEnv(gym.Env):
         # pass reward kwargs as attributes
         for key, value in kwargs.items():
             setattr(self, key, value)
+        
         # gym spaces
         self.action_space = gym.spaces.Discrete(4)
         self.observation_space = gym.spaces.Box(low=-1000, high=1000,
@@ -49,22 +49,25 @@ class SnapyEnv(gym.Env):
         self.previous_actions = deque(maxlen=SNAKE_LEN_GOAL)
 
         # clean slate
-        self.head = pygame.rect.Rect(self.window_width/2, self.window_height/2, self.pixel, self.pixel)
+        self.head = pygame.rect.Rect(self.window_width/2, self.window_height/2,
+                                     self.pixel, self.pixel)
 
         self.done = False
         self.score = 0
         self.reward = 0
         self.snake_length = 2
+
         self.place_food()
-        
-        print(self.food_reward)
        
         # append nonsense data for nonexistent prev actions
         for _ in range(SNAKE_LEN_GOAL):
             self.previous_actions.append(-1)
 
         # construct observation space
-        observation = [self.head.centerx, self.head.centery, self.food.centerx, self.food.centery, self.snake_length] + list(self.previous_actions)
+        observation = [self.head.centerx, self.head.centery,
+                       self.food.centerx, self.food.centery,
+                       self.snake_length] + list(self.previous_actions)
+
         observation = np.array(observation)
         return observation 
    
@@ -86,20 +89,25 @@ class SnapyEnv(gym.Env):
         self.check_death()
         self.check_food() 
 
-        self.info = {}
         self.reward = self.score
-        
-        observation = [self.head.centerx, self.head.centery, self.food.centerx, self.food.centery, self.snake_length] + list(self.previous_actions)
+
+        self.info = {}
+        observation = [self.head.centerx, self.head.centery,
+                       self.food.centerx, self.food.centery,
+                       self.snake_length] + list(self.previous_actions)
+
         observation = np.array(observation) 
         
         return observation, self.reward, self.done, self.info 
         
 
     def check_death(self):
-        if self.head.centerx > self.window_width or self.head.centerx < 0 or self.head.centery > self.window_height or self.head.centery < 0:
+        if self.head.centerx > self.window_width or self.head.centerx < 0 or
+           self.head.centery > self.window_height or self.head.centery < 0:
             self.done = True
             self.score += self.wall_reward
-        elif self.snake_length > 1 and self.head.center in self.previous_positions[-self.snake_length:]:
+
+        elif self.head.center in self.previous_positions[-self.snake_length:]:
             self.done = True
             self.score += self.ouroboros_reward
     
