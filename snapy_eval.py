@@ -10,7 +10,7 @@ import glob
 
 
 if __name__ == "__main__":
-    name = 'snapy6_po'
+    name = 'snapy7_po'
         # version = '01890000'
 
     model_dir = f'/home/os/gits/SnaPy/models/{name}'

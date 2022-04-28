@@ -16,7 +16,7 @@ if __name__ == '__main__':
     # ouroboros_reward = -1
 
 
-    name = 'snapy6_po'
+    name = 'snapy7_po'
 
     models_dir = f'models/{name}/'
     logdir = f'logs/{name}/'

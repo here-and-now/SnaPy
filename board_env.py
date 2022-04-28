@@ -32,13 +32,13 @@ class SnapyEnv(gym.Env):
         # rewards
 
         self.food_reward = 500
-        self.step_reward = 0
-        self.ouroboros_reward = -2
-        self.wall_reward = -1
+        self.step_reward = -0.1
+        self.ouroboros_reward = -5
+        self.wall_reward = -5
         
         # gym spaces
         self.action_space = gym.spaces.Discrete(4)
-        self.observation_space = gym.spaces.Box(low=-5000, high=5000,
+        self.observation_space = gym.spaces.Box(low=-1000, high=1000,
                                             shape=(5+SNAKE_LEN_GOAL,), dtype=np.int32)
 
         # start fresh
