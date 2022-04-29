@@ -1,4 +1,3 @@
-import pygame
 import random
 import math
 import sys
@@ -18,8 +17,8 @@ class SnapyEnv(gym.Env):
         super(SnapyEnv, self).__init__()
 
         # inits
-        self.window_width = 1000
-        self.window_height = 1000
+        self.window_width = 900
+        self.window_height = 900
         self.pixel = 100
         self.rend = False
         self.rendrate = 3
@@ -37,10 +36,10 @@ class SnapyEnv(gym.Env):
         # gym spaces
         self.action_space = gym.spaces.Discrete(4)
         self.observation_space = gym.spaces.Box(low=-5000, high=5000,
-                                            shape=(5+SNAKE_LEN_GOAL,), dtype=np.float32)
+                                            shape=(6+SNAKE_LEN_GOAL,), dtype=np.float32)
 
         # start fresh
-        # self.reset()
+        self.reset()
 
 
     def reset(self):
@@ -49,8 +48,7 @@ class SnapyEnv(gym.Env):
         self.previous_actions = deque(maxlen=SNAKE_LEN_GOAL)
 
         # clean slate
-        self.head = pygame.rect.Rect(self.window_width/2, self.window_height/2,
-                                     self.pixel, self.pixel)
+        self.head = (self.window_width/2, self.window_height/2)
 
         self.done = False
         self.score = 0
@@ -63,10 +61,12 @@ class SnapyEnv(gym.Env):
         for _ in range(SNAKE_LEN_GOAL):
             self.previous_actions.append(-1)
 
+        
+        euclid = self.euclidean_dist_to_food()
         # construct observation space
-        observation = [self.head.centerx, self.head.centery,
-                       self.food.centerx, self.food.centery,
-                       self.snake_length] + list(self.previous_actions)
+        observation = [self.head[0], self.head[1],
+                       self.food[0], self.food[1],
+                       self.snake_length, euclid] + list(self.previous_actions)
 
         observation = np.array(observation)
         observation = observation.astype(np.float32)
@@ -75,16 +75,19 @@ class SnapyEnv(gym.Env):
  
     def step(self,action):
         self.previous_actions.append(action) 
-        self.previous_positions.append(self.head.center)
+        self.previous_positions.append(self.head)
+        self.head = list(self.head)
         if action == 0:
-            self.head.centerx = self.head.centerx - self.pixel
+            self.head[0] = self.head[0] - self.pixel
         if action == 1:
-            self.head.centerx = self.head.centerx + self.pixel
+            self.head[0] = self.head[0] + self.pixel
         if action == 2:
-            self.head.centery = self.head.centery - self.pixel
+            self.head[1] = self.head[1] - self.pixel
         if action == 3:
-            self.head.centery = self.head.centery + self.pixel
+            self.head[1] = self.head[1] + self.pixel
+        self.head = tuple(self.head)
 
+        euclid = self.euclidean_dist_to_food()
 
         self.check_death()
         self.check_food() 
@@ -92,9 +95,9 @@ class SnapyEnv(gym.Env):
         self.reward = self.score
 
         self.info = {}
-        observation = [self.head.centerx, self.head.centery,
-                       self.food.centerx, self.food.centery,
-                       self.snake_length] + list(self.previous_actions)
+        observation = [self.head[0], self.head[1],
+                       self.food[0], self.food[1],
+                       self.snake_length, euclid] + list(self.previous_actions)
 
         observation = np.array(observation) 
         observation = observation.astype(np.float32)
@@ -103,34 +106,42 @@ class SnapyEnv(gym.Env):
         
 
     def check_death(self):
-        if self.head.centerx > self.window_width or self.head.centerx < 0 or \
-           self.head.centery > self.window_height or self.head.centery < 0:
+        if self.head[0] >= self.window_width  or self.head[0] <= 0 or \
+           self.head[1] >= self.window_height or self.head[1] <= 0:
             self.done = True
             self.score += self.wall_reward
 
-        elif self.head.center in self.previous_positions[-self.snake_length:]:
+        elif self.head in self.previous_positions[-self.snake_length:]:
             self.done = True
             self.score += self.ouroboros_reward
     
     def check_food(self):
-        if self.head.center == self.food.center:
+        if self.head == self.food:
             self.snake_length += 1
             self.place_food()
             self.score += self.food_reward
     
     def euclidean_dist_to_food(self):
-        return np.linalg.norm(np.array(self.snake_head.center) - np.array(self.food.center))
+        return np.linalg.norm(np.array(self.head) - np.array(self.food))
 
 
     def render(self):
+        import pygame
         if not self.rend:
             self.clock = pygame.time.Clock()
             self.screen = pygame.display.set_mode((self.window_width, self.window_height))
             self.rend = True
-            
+        
+         
+        head = pygame.rect.Rect(0, 0, self.pixel, self.pixel)
+        food = pygame.rect.Rect(0, 0, self.pixel, self.pixel)
+        head.center = self.head
+        food.center = self.food
+    
+
         self.screen.fill(black)
-        pygame.draw.rect(self.screen, red, self.head)
-        pygame.draw.rect(self.screen, green, self.food)
+        pygame.draw.rect(self.screen, red, head)
+        pygame.draw.rect(self.screen, green, food)
 
             
         body = pygame.rect.Rect(0,0, self.pixel, self.pixel )
@@ -143,11 +154,13 @@ class SnapyEnv(gym.Env):
         
    
     def place_food(self):
-        x = random.randrange(0, self.window_width, self.pixel)
-        y = random.randrange(0, self.window_height, self.pixel)
-        self.food = pygame.rect.Rect(x,y,self.pixel, self.pixel)
-
-        if self.food.center in self.previous_positions[-self.snake_length:]:
+        x = random.randrange(0+self.pixel/2, self.window_width-self.pixel/2, self.pixel)
+        y = random.randrange(0+self.pixel/2, self.window_height-self.pixel/2, self.pixel)
+        # self.food = pygame.rect.Rect(x,y,self.pixel, self.pixel)
+        self.food = (x,y)
+        print(self.head)
+        print(self.food)
+        if self.food in self.previous_positions[-self.snake_length:]:
             self.place_food()
 
 

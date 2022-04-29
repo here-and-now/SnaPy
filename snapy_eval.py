@@ -5,13 +5,14 @@ from stable_baselines3 import PPO
 from stable_baselines3.common.evaluation import evaluate_policy
 from stable_baselines3.common.vec_env import DummyVecEnv, SubprocVecEnv
 
-from board_env import SnapyEnv
+# from board_env import SnapyEnv
+from snapy_env import SnapyEnv
 import glob
 import json
 
 if __name__ == "__main__":
 
-    name = 'snapy8bs'
+    name = 'Euclid_Snapy1'
     model_dir = f'/home/os/gits/SnaPy/models/{name}/'
     def render_newest():
      
@@ -22,19 +23,13 @@ if __name__ == "__main__":
         model = PPO.load(newest, verbose=1)
         # model = PPO.load(f'models/{name}/{version}', verbose=1)
 
-
-        # both working, not needed?
-        # model.set_env(SubprocVecEnv([lambda: SnapyEnv()]))
-        # model.set_env(DummyVecEnv([lambda: SnapyEnv()]))
-
-
         # mean_reward, std_reward = evaluate_policy(model, model.get_env(), n_eval_episodes=1)
         # print('Mean reward', mean_reward)
         # print('Std reward', std_reward)
 
         with open(model_dir + 'rewards','r') as f:
             rewards = json.load(f)
-        print(rewards)
+
         env = SnapyEnv(**rewards)
         # env = DummyVecEnv([lambda: env])
 
