@@ -5,17 +5,17 @@ import os
 from snapy_env import SnapyEnv
 import time
 from stable_baselines3.common.monitor import Monitor
-from stable_baselines3.common.vec_env import SubprocVecEnv, DummyVecEnv, VecNormalize, VecMonitor
+from stable_baselines3.common.vec_env import SubprocVecEnv, DummyVecEnv, VecNormalize, VecMonitor, VecCheckNan
 import json
 import torch
 
 if __name__ == '__main__':
 
-    name = '4'
+    name = '1d'
     models_dir = f'models/{name}/'
     logdir = f'logs/{name}/'
 
-    num_cpu = 20
+    num_cpu = 4
  
     if not os.path.exists(models_dir):
         os.makedirs(models_dir)
@@ -25,9 +25,9 @@ if __name__ == '__main__':
     # reward parameters dict
     reward_dict = {
             'food_reward': 100,
-            'step_reward': -0.1,  
+            'step_reward': 1,  
             'ouroboros_reward': -20,  
-            'wall_reward':-20, 
+            'wall_reward': -5
             }
     with open(models_dir + 'rewards', 'w') as f:
         f.write(json.dumps(reward_dict))
@@ -40,6 +40,7 @@ if __name__ == '__main__':
     env = SnapyEnv(**reward_dict)
     # env = env.to('cuda')
     env = SubprocVecEnv([lambda: env for i in range(num_cpu)])
+    env = VecCheckNan(env, raise_exception=True)
     env = VecMonitor(env, logdir)
 
     # env = SnapyEnv(**reward_dict)
@@ -49,8 +50,14 @@ if __name__ == '__main__':
     # env = Monitor(env, logdir)
 
     # model stuff 
-    # model = PPO('MlpPolicy', env, verbose=1, tensorboard_log=logdir, device='cuda')
-    model = PPO('MlpPolicy', env, verbose=1, tensorboard_log=logdir, device='cpu')
+    # model = PPO('MlpPolicy', env, verbose=1, tensorboard_log=logdir, device='cpu')
+
+
+    model = PPO('MlpPolicy', env, verbose=1, tensorboard_log=logdir, device='cuda')
+    # model = PPO('MultiInputPolicy', env, verbose=1, tensorboard_log=logdir, device='cuda')
+
+
+
     # model.learn(total_timesteps=10000)
     TIMESTEPS = 100000
     # max_iters = 25

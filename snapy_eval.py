@@ -12,7 +12,7 @@ import json
 
 if __name__ == "__main__":
 
-    name = 'Euclid_Snapy1'
+    name = '4'
     model_dir = f'/home/os/gits/SnaPy/models/{name}/'
     def render_newest():
      
@@ -34,7 +34,7 @@ if __name__ == "__main__":
         # env = DummyVecEnv([lambda: env])
 
         obs = env.reset()
-        for _ in range(100):
+        for _ in range(200):
             action, _states = model.predict(obs)
             obs, rewards, dones, info = env.step(action)
             env.render()
