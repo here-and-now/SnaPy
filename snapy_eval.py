@@ -12,7 +12,7 @@ import json
 
 if __name__ == "__main__":
 
-    name = '4'
+    name = '9_pos_under_action'
     model_dir = f'/home/os/gits/SnaPy/models/{name}/'
     def render_newest():
      
@@ -31,6 +31,7 @@ if __name__ == "__main__":
             rewards = json.load(f)
 
         env = SnapyEnv(**rewards)
+        env.rendrate=25
         # env = DummyVecEnv([lambda: env])
 
         obs = env.reset()

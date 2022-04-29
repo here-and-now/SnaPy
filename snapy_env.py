@@ -11,7 +11,7 @@ window_width, window_height = 800,800
 black, white, green, red = (0,0,0), (255,255,255), (0,255,0), (255,0,0)
 
 
-SNAKE_LEN_GOAL=50
+SNAKE_LEN_GOAL=15
 
 class SnapyEnv(gym.Env):
     def __init__(self, **kwargs):
@@ -37,7 +37,7 @@ class SnapyEnv(gym.Env):
         # gym spaces
         self.action_space = gym.spaces.Discrete(4)
         self.observation_space = gym.spaces.Box(low=-1000, high=1000,
-                                            shape=(6+2*SNAKE_LEN_GOAL,), dtype=np.float32)
+                                            shape=(5+2*SNAKE_LEN_GOAL,), dtype=np.float32)
         # start fresh
         # self.reset()
 
@@ -72,7 +72,7 @@ class SnapyEnv(gym.Env):
         observation = [self.head[0], self.head[1],
                        self.food[0], self.food[1],
                        # self.snake_length, euclid] + list(self.previous_actions)
-                       self.snake_length, euclid] + prevs
+                       self.snake_length] + prevs
                        # self.snake_length, euclid] + [item for pos in self.previous_pos for item in pos]
 
         observation = np.array(observation, dtype=np.float32)
@@ -82,7 +82,6 @@ class SnapyEnv(gym.Env):
     def step(self,action):
         self.previous_actions.append(action) 
         self.previous_positions.append(self.head)
-        self.previous_pos.append(self.head)
 
         self.head = list(self.head)
         if action == 0:
@@ -95,10 +94,12 @@ class SnapyEnv(gym.Env):
             self.head[1] = self.head[1] + self.pixel
         self.head = tuple(self.head)
 
+        self.previous_pos.append(self.head)
+
         euclid = self.euclidean_dist_to_food()
 
         self.score += self.check_death()
-        self.score += (self.check_food() * self.snake_length) 
+        self.score += self.check_food()
 
         self.reward = self.score
 
@@ -108,7 +109,7 @@ class SnapyEnv(gym.Env):
         observation = [self.head[0], self.head[1],
                        self.food[0], self.food[1],
                        # self.snake_length, euclid] + list(self.previous_actions)
-                       self.snake_length, euclid] + prevs
+                       self.snake_length] + prevs
         
         observation = np.array(observation, dtype=np.float32)
         return observation, self.reward, self.done, self.info 
@@ -132,7 +133,7 @@ class SnapyEnv(gym.Env):
             self.place_food()
             return self.food_reward
         else:
-            return 0
+            return -self.euclidean_dist_to_food()/1000
     
     def euclidean_dist_to_food(self):
         return np.linalg.norm(np.array(self.head) - np.array(self.food))

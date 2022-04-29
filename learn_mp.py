@@ -11,7 +11,7 @@ import torch
 
 if __name__ == '__main__':
 
-    name = '4'
+    name = '9_pos_under_action'
     models_dir = f'models/{name}/'
     logdir = f'logs/{name}/'
 
@@ -24,10 +24,10 @@ if __name__ == '__main__':
 
     # reward parameters dict
     reward_dict = {
-            'food_reward': 100,
-            'step_reward': -0.1,  
-            'ouroboros_reward': -20,  
-            'wall_reward':-20, 
+            'food_reward': 1000,
+            'step_reward': 0,  
+            'ouroboros_reward': -5,  
+            'wall_reward':-5, 
             }
     with open(models_dir + 'rewards', 'w') as f:
         f.write(json.dumps(reward_dict))
