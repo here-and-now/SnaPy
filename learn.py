@@ -11,11 +11,11 @@ import torch
 
 if __name__ == '__main__':
 
-    name = '9_pos_under_action'
+    name = 'end1'
     models_dir = f'models/{name}/'
     logdir = f'logs/{name}/'
 
-    num_cpu = 20
+    num_cpu = 8
  
     if not os.path.exists(models_dir):
         os.makedirs(models_dir)
@@ -26,24 +26,19 @@ if __name__ == '__main__':
     reward_dict = {
             'food_reward': 1000,
             'step_reward': 0,  
-            'ouroboros_reward': -5,  
-            'wall_reward':-5, 
+            'ouroboros_reward': 0,  
+            'wall_reward':0, 
             }
     with open(models_dir + 'rewards', 'w') as f:
         f.write(json.dumps(reward_dict))
 
-
-    # torch.multiprocessing.set_start_method('spawn')
     # iniate env with rewards
     # create n_cpu SubprocVecEnv for multiprocessing
     # add envs to VecMonitor to get rollout logging data
     env = SnapyEnv(**reward_dict)
-    # env = env.to('cuda')
     env = SubprocVecEnv([lambda: env for i in range(num_cpu)])
     env = VecMonitor(env, logdir)
 
-    # env = SnapyEnv(**reward_dict)
-    
     # env = SnapyEnv(**reward_dict)
     # env = DummyVecEnv([lambda: env])
     # env = Monitor(env, logdir)
@@ -51,8 +46,8 @@ if __name__ == '__main__':
     # model stuff 
     # model = PPO('MlpPolicy', env, verbose=1, tensorboard_log=logdir, device='cuda')
     model = PPO('MlpPolicy', env, verbose=1, tensorboard_log=logdir, device='cpu')
-    # model.learn(total_timesteps=10000)
-    TIMESTEPS = 100000
+
+    TIMESTEPS = 10000
     # max_iters = 25
 
 

@@ -12,7 +12,7 @@ import json
 
 if __name__ == "__main__":
 
-    name = '9_pos_under_action'
+    name = 'end'
     model_dir = f'/home/os/gits/SnaPy/models/{name}/'
     def render_newest():
      
@@ -20,7 +20,7 @@ if __name__ == "__main__":
         newest = max(files, key=os.path.getctime)
         print('loaded model:', newest)
 
-        model = PPO.load(newest, verbose=1)
+        model = PPO.load(newest, verbose=1, device='cpu')
         # model = PPO.load(f'models/{name}/{version}', verbose=1)
 
         # mean_reward, std_reward = evaluate_policy(model, model.get_env(), n_eval_episodes=1)
@@ -39,6 +39,7 @@ if __name__ == "__main__":
             action, _states = model.predict(obs)
             obs, rewards, dones, info = env.step(action)
             env.render()
+            print(rewards)
             if dones:
                 env.reset()
         
